@@ -3,8 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Noble Quran - Timeline Experience</title>
-    <meta name="description" content="A kinetic timeline of the Quranic revelation summary.">
+    <title>The Noble Quran - Kinetic Timeline</title>
+    <meta name="description" content="A kinetic timeline of the Quranic revelation summary with audio narration.">
+    <meta name="theme-color" content="#050507">
+
+    <!-- Favicon (SVG Data URI) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23050507' stroke='%23D4AF37' stroke-width='2'/%3E%3Cpath d='M50 20 L60 40 L80 40 L65 55 L70 75 L50 60 L30 75 L35 55 L20 40 L40 40 Z' fill='%23D4AF37'/%3E%3C/svg%3E">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-domain.com/"> <!-- Update with your URL -->
+    <meta property="og:title" content="The Noble Quran - Kinetic Timeline">
+    <meta property="og:description" content="Explore the Quran summaries in chronological revelation order with poetic audio narration.">
+    <meta property="og:image" content="quran-timeline-cover.png"> <!-- Host the downloaded poster here -->
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://your-domain.com/"> <!-- Update with your URL -->
+    <meta property="twitter:title" content="The Noble Quran - Kinetic Timeline">
+    <meta property="twitter:description" content="Explore the Quran summaries in chronological revelation order with poetic audio narration.">
+    <meta property="twitter:image" content="quran-timeline-cover.png"> <!-- Host the downloaded poster here -->
     
     <!-- Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -81,6 +99,15 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Active Reading State */
+        .card-active {
+            border-color: #D4AF37 !important;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.2) !important;
+            background: rgba(30, 30, 40, 0.8) !important;
+            transform: scale(1.02);
         }
 
         /* Timeline Specifics */
@@ -111,19 +138,53 @@
         }
 
         /* Toggle Switch */
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #D4AF37;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #D4AF37;
-        }
+        .toggle-checkbox:checked { right: 0; border-color: #D4AF37; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #D4AF37; }
         
         /* Controls */
         .control-glass {
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        /* Audio Visualizer Bar (Simple CSS Animation) */
+        .playing-indicator {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 12px;
+        }
+        .playing-bar {
+            width: 3px;
+            background: #D4AF37;
+            animation: equalizer 1s infinite ease-in-out;
+        }
+        .playing-bar:nth-child(2) { animation-delay: 0.2s; height: 60%; }
+        .playing-bar:nth-child(3) { animation-delay: 0.4s; height: 30%; }
+        
+        @keyframes equalizer {
+            0%, 100% { height: 20%; }
+            50% { height: 100%; }
+        }
+
+        /* Custom Select for Voice */
+        .voice-select {
+            background: rgba(0,0,0,0.5);
+            color: #D4AF37;
+            border: none;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            outline: none;
+            max-width: 150px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .voice-select option {
+            background: #050507;
+            color: #D4AF37;
         }
 
         /* Mobile Adjustments */
@@ -135,16 +196,6 @@
 </head>
 <body class="opacity-0 transition-opacity duration-700 ease-out">
 
-    <!-- Dynamic Favicon -->
-    <script>
-        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="%23050507" stroke="%23D4AF37" stroke-width="2"/><path d="M50 20 L60 40 L80 40 L65 55 L70 75 L50 60 L30 75 L35 55 L20 40 L40 40 Z" fill="%23D4AF37"/></svg>`;
-        const link = document.createElement('link');
-        link.rel = 'icon';
-        link.href = `data:image/svg+xml,${encodeURIComponent(svgIcon)}`;
-        document.head.appendChild(link);
-    </script>
-
-    <!-- Noise Texture -->
     <div class="noise-overlay"></div>
 
     <!-- Loader -->
@@ -156,7 +207,15 @@
     <!-- Navigation -->
     <nav class="fixed top-0 left-0 w-full p-6 z-40 flex justify-between items-center bg-gradient-to-b from-black/90 to-transparent pointer-events-none">
         <span class="font-serif-display text-xl text-[#D4AF37] tracking-wider pointer-events-auto">The Noble Quran</span>
-        <div class="pointer-events-auto flex gap-4">
+        <div class="pointer-events-auto flex gap-4 items-center">
+            <!-- Voice Select UI -->
+            <div class="flex items-center gap-2 mr-2">
+                <label for="voiceSelect" class="text-[10px] text-gray-500 uppercase tracking-widest hidden md:block">Reader:</label>
+                <select id="voiceSelect" class="voice-select control-glass" onchange="changeVoice(this.value)">
+                    <option value="">Loading Voices...</option>
+                </select>
+            </div>
+            
             <button onclick="generateOGImage()" class="hidden md:block text-xs border border-[#D4AF37] text-[#D4AF37] px-4 py-2 rounded-full hover:bg-[#D4AF37] hover:text-black transition-all duration-300">
                 Download Poster
             </button>
@@ -166,15 +225,39 @@
     <!-- Floating Controls -->
     <div class="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
         
-        <!-- Auto Scroll Button -->
-        <button id="autoScrollBtn" onclick="toggleAutoScroll()" class="control-glass w-12 h-12 rounded-full flex items-center justify-center text-[#D4AF37] hover:scale-110 transition-transform group" title="Auto Scroll">
-            <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="ml-1">
-                <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
-            </svg>
-            <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="hidden">
-                <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"/>
-            </svg>
-        </button>
+        <!-- Narration Control -->
+        <div class="flex items-center gap-3">
+             <div id="now-playing" class="control-glass px-4 py-2 rounded-full text-[#D4AF37] text-xs font-bold uppercase tracking-wider opacity-0 transition-opacity duration-300 flex items-center gap-2">
+                <div class="playing-indicator">
+                    <div class="playing-bar"></div>
+                    <div class="playing-bar"></div>
+                    <div class="playing-bar"></div>
+                </div>
+                <span id="current-surah-name">Reading...</span>
+            </div>
+
+            <!-- Mute Button -->
+            <button id="muteBtn" onclick="toggleMute()" class="control-glass w-10 h-10 rounded-full flex items-center justify-center text-[#D4AF37] hover:bg-white/10 transition-colors group" title="Toggle Sound">
+                <svg id="soundIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.473 8.473 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z"/>
+                    <path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.483 5.483 0 0 1 11.025 8a5.483 5.483 0 0 1-1.61 3.89l.706.706z"/>
+                    <path d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.49 3.49 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/>
+                </svg>
+                <svg id="muteIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" class="hidden">
+                    <path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zm7.137 2.096a.5.5 0 0 1 0 .708L12.207 8l1.647 1.646a.5.5 0 0 1-.708.708L11.5 8.707l-1.646 1.647a.5.5 0 0 1-.708-.708L10.793 8 9.146 6.354a.5.5 0 1 1 .708-.708L11.5 7.293l1.646-1.647a.5.5 0 0 1 .708 0z"/>
+                </svg>
+            </button>
+
+            <button id="playBtn" onclick="toggleNarration()" class="control-glass w-14 h-14 rounded-full flex items-center justify-center text-[#D4AF37] hover:scale-110 transition-transform group shadow-[0_0_20px_rgba(212,175,55,0.2)]" title="Start Auto-Scroll">
+                <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" class="ml-1">
+                    <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                </svg>
+                <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" class="hidden">
+                    <rect x="4" y="4" width="3" height="8" rx="1" />
+                    <rect x="9" y="4" width="3" height="8" rx="1" />
+                </svg>
+            </button>
+        </div>
 
         <!-- View Switcher -->
         <div class="control-glass p-1 rounded-full flex items-center relative">
@@ -203,19 +286,15 @@
         </div>
 
         <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60">
-            <span class="text-[10px] uppercase tracking-widest">Scroll to Begin</span>
+            <span class="text-[10px] uppercase tracking-widest">Tap Play to Start</span>
             <div class="w-[1px] h-12 bg-gradient-to-b from-[#D4AF37] to-transparent animate-bounce"></div>
         </div>
     </header>
 
     <!-- Main Timeline Content -->
     <main class="relative z-10 max-w-6xl mx-auto px-4 pb-32">
-        <!-- The Central Line Container -->
         <div class="relative">
-            <!-- Vertical Line -->
             <div class="timeline-line h-full"></div>
-
-            <!-- Container for cards -->
             <div id="surah-timeline" class="flex flex-col gap-12 py-20">
                 <!-- JS Injected Content -->
             </div>
@@ -359,17 +438,23 @@
         ];
 
         // --- STATE & LOGIC ---
-        let currentMode = 'revelation'; // 'revelation' or 'mushaf'
-        let isAutoScrolling = false;
+        let currentMode = 'revelation';
         let lenis;
-        let autoScrollRafId;
+        let narrator = {
+            isPlaying: false,
+            isMuted: false,
+            currentIndex: 0,
+            utterance: null,
+            voice: null,
+            timer: null
+        };
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             initLenis();
             renderTimeline(currentMode);
+            initVoiceSystem();
 
-            // Initial Loader Transition
             setTimeout(() => {
                 document.getElementById('loader').style.opacity = '0';
                 document.getElementById('loader').style.pointerEvents = 'none';
@@ -391,11 +476,199 @@
             requestAnimationFrame(raf);
         }
 
+        // --- VOICE SYSTEM ---
+        function initVoiceSystem() {
+            const loadVoices = () => {
+                const voices = window.speechSynthesis.getVoices();
+                const voiceSelect = document.getElementById('voiceSelect');
+                
+                if (voices.length > 0) {
+                    voiceSelect.innerHTML = '';
+                    const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+                    englishVoices.sort((a, b) => {
+                        const isNaturalA = a.name.includes('Natural') || a.name.includes('Enhanced') || a.name.includes('Premium');
+                        const isNaturalB = b.name.includes('Natural') || b.name.includes('Enhanced') || b.name.includes('Premium');
+                        return isNaturalB - isNaturalA;
+                    });
+
+                    englishVoices.forEach(voice => {
+                        const option = document.createElement('option');
+                        option.value = voice.name;
+                        option.textContent = `${voice.name.replace('Microsoft', '').replace('Google', '').replace('Online (Natural) - English (United States)', 'Natural US').substring(0, 30)}...`;
+                        voiceSelect.appendChild(option);
+                    });
+
+                    const bestVoice = englishVoices.find(v => v.name.includes('Natural') || v.name.includes('Enhanced')) 
+                        || englishVoices.find(v => v.name.includes('Google US English'))
+                        || englishVoices.find(v => v.name.includes('Samantha'))
+                        || englishVoices[0];
+
+                    if (bestVoice) {
+                        narrator.voice = bestVoice;
+                        voiceSelect.value = bestVoice.name;
+                    }
+                } else {
+                    voiceSelect.innerHTML = '<option>No Voices Found</option>';
+                }
+            };
+
+            loadVoices();
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        function changeVoice(voiceName) {
+            const voices = window.speechSynthesis.getVoices();
+            const selected = voices.find(v => v.name === voiceName);
+            if(selected) {
+                narrator.voice = selected;
+                if(narrator.isPlaying && !narrator.isMuted) {
+                    window.speechSynthesis.cancel();
+                    speakNextCard();
+                }
+            }
+        }
+
+        function toggleMute() {
+            narrator.isMuted = !narrator.isMuted;
+            const soundIcon = document.getElementById('soundIcon');
+            const muteIcon = document.getElementById('muteIcon');
+            const indicator = document.getElementById('now-playing');
+
+            // Update UI
+            if (narrator.isMuted) {
+                soundIcon.classList.add('hidden');
+                muteIcon.classList.remove('hidden');
+                document.querySelector('.playing-indicator').style.opacity = '0.2';
+            } else {
+                soundIcon.classList.remove('hidden');
+                muteIcon.classList.add('hidden');
+                document.querySelector('.playing-indicator').style.opacity = '1';
+            }
+
+            // Logic Handling
+            if (narrator.isPlaying) {
+                // Temporarily stop to switch modes smoothly
+                narrator.isPlaying = false;
+                window.speechSynthesis.cancel();
+                clearTimeout(narrator.timer);
+                
+                // Restart logic with new mute state
+                narrator.isPlaying = true;
+                speakNextCard();
+            }
+        }
+
+        function toggleNarration() {
+            const btn = document.getElementById('playBtn');
+            const playIcon = document.getElementById('playIcon');
+            const pauseIcon = document.getElementById('pauseIcon');
+            const indicator = document.getElementById('now-playing');
+
+            if (narrator.isPlaying) {
+                // STOP
+                narrator.isPlaying = false;
+                window.speechSynthesis.cancel();
+                clearTimeout(narrator.timer);
+                
+                btn.classList.remove('bg-[#D4AF37]', 'text-black');
+                btn.classList.add('text-[#D4AF37]');
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+                indicator.style.opacity = '0';
+                
+                document.querySelectorAll('.surah-card > div').forEach(el => el.classList.remove('card-active'));
+
+            } else {
+                // START
+                narrator.isPlaying = true;
+                
+                btn.classList.add('bg-[#D4AF37]', 'text-black');
+                btn.classList.remove('text-[#D4AF37]');
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+                indicator.style.opacity = '1';
+
+                speakNextCard();
+            }
+        }
+
+        function speakNextCard() {
+            if (!narrator.isPlaying) return;
+
+            const cards = document.querySelectorAll('.surah-card');
+            if (narrator.currentIndex >= cards.length) {
+                narrator.currentIndex = 0; 
+            }
+
+            const wrapper = cards[narrator.currentIndex];
+            const cardInner = wrapper.querySelector('.card-glass');
+            
+            // Highlight & Scroll
+            document.querySelectorAll('.surah-card > div').forEach(el => el.classList.remove('card-active'));
+            cardInner.classList.add('card-active');
+            
+            const rect = wrapper.getBoundingClientRect();
+            lenis.scrollTo(wrapper, { offset: -window.innerHeight/2 + rect.height/2, duration: 1.5 });
+
+            // Data Setup
+            let currentSurah;
+            if (currentMode === 'revelation') {
+                const revNum = revelationOrder[narrator.currentIndex];
+                currentSurah = surahsDB.find(s => s.no === revNum);
+            } else {
+                currentSurah = surahsDB[narrator.currentIndex]; 
+            }
+
+            const statusText = narrator.isMuted ? 'Auto-Scrolling...' : 'Reading...';
+            document.getElementById('current-surah-name').textContent = `${statusText} ${currentSurah.name}`;
+            
+            // --- BRANCHING LOGIC ---
+            if (narrator.isMuted) {
+                // SILENT MODE: Calculate duration based on text length
+                // Approx 200 words per minute = ~3 words per second = ~300ms per word
+                // Add base 4 seconds for absorbing the visual
+                const text = `${currentSurah.name} ${currentSurah.meaning} ${currentSurah.summary}`;
+                const wordCount = text.split(' ').length;
+                const duration = Math.max(4000, (wordCount * 300) + 2000); 
+
+                narrator.timer = setTimeout(() => {
+                    if (narrator.isPlaying) {
+                        narrator.currentIndex++;
+                        speakNextCard();
+                    }
+                }, duration);
+
+            } else {
+                // VOICE MODE
+                const textToRead = `${currentSurah.name}. ${currentSurah.meaning}. ... ${currentSurah.summary}`;
+                const utterance = new SpeechSynthesisUtterance(textToRead);
+                utterance.voice = narrator.voice;
+                utterance.rate = 0.9; 
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+
+                utterance.onend = () => {
+                    if (narrator.isPlaying) {
+                        narrator.currentIndex++;
+                        setTimeout(speakNextCard, 800);
+                    }
+                };
+                
+                // Safety timeout in case speech engine stalls
+                // utterance.onerror = () => ... (optional robustness)
+
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
         function switchMode(mode) {
             if (currentMode === mode) return;
+            
+            if(narrator.isPlaying) toggleNarration();
+            narrator.currentIndex = 0;
+
             currentMode = mode;
 
-            // Visual Feedback
             const hl = document.getElementById('switchHighlight');
             const btnRev = document.getElementById('btn-revelation');
             const btnMus = document.getElementById('btn-mushaf');
@@ -408,7 +681,6 @@
                 btnRev.classList.replace('text-black', 'text-[#D4AF37]');
                 btnMus.classList.replace('text-[#D4AF37]', 'text-black');
                 
-                // Update Text
                 heroSub.textContent = "Traditional Order";
                 heroTitle.textContent = "AL-QURAN";
                 heroDesc.textContent = "The compiled order of the Mushaf, from Al-Fatiha to An-Nas.";
@@ -417,27 +689,21 @@
                 btnRev.classList.replace('text-[#D4AF37]', 'text-black');
                 btnMus.classList.replace('text-black', 'text-[#D4AF37]');
                 
-                // Update Text
                 heroSub.textContent = "Chronological Order";
                 heroTitle.textContent = "REVELATION";
                 heroDesc.textContent = "A journey through the timeline of divine command.";
             }
 
-            // Re-render
             renderTimeline(mode);
-            
-            // Reset Scroll
             lenis.scrollTo(0);
         }
 
         function renderTimeline(mode) {
             const container = document.getElementById('surah-timeline');
-            container.innerHTML = ''; // Clear existing
+            container.innerHTML = '';
 
-            // Kill old triggers to prevent memory leaks and conflicts
             ScrollTrigger.getAll().forEach(t => t.kill());
 
-            // Prepare Data
             let sortedSurahs;
             if (mode === 'revelation') {
                 sortedSurahs = revelationOrder.map(num => surahsDB.find(s => s.no === num)).filter(Boolean);
@@ -445,33 +711,24 @@
                 sortedSurahs = [...surahsDB].sort((a, b) => a.no - b.no);
             }
 
-            // Render Loop
             sortedSurahs.forEach((surah, index) => {
                 const isLeft = index % 2 === 0;
+                const marginClass = isLeft ? 'md:mr-12' : 'md:ml-12';
+                const alignClass = isLeft ? 'md:text-right' : 'md:text-left';
+                const flexAlign = isLeft ? 'md:items-end' : 'md:items-start';
                 
                 const wrapper = document.createElement('div');
-                wrapper.className = `relative flex w-full items-center mb-8 ${isLeft ? 'md:justify-end' : 'md:justify-start'}`;
+                wrapper.className = `relative flex w-full items-center mb-8 ${isLeft ? 'md:justify-end' : 'md:justify-start'} surah-card`;
                 
-                // Node logic: Center dot
                 const node = `
                     <div class="timeline-node hidden md:block"></div>
                     <div class="absolute left-[20px] top-8 w-3 h-3 bg-[#D4AF37] rounded-full md:hidden z-10 shadow-glow"></div>
                 `;
 
-                const marginClass = isLeft ? 'md:mr-12' : 'md:ml-12';
-                const alignClass = isLeft ? 'md:text-right' : 'md:text-left';
-                const flexAlign = isLeft ? 'md:items-end' : 'md:items-start';
-                
-                // Logic for small label
-                const labelText = mode === 'revelation' 
-                    ? `Revelation #${index + 1}` 
-                    : `Juz/Para Logic varies`; 
-
                 wrapper.innerHTML = `
                     ${node}
-                    <div class="surah-card w-full md:w-[45%] pl-12 md:pl-0 ${marginClass} opacity-0 transform translate-y-8 transition-all duration-500 group">
+                    <div class="w-full md:w-[45%] pl-12 md:pl-0 ${marginClass} opacity-0 transform translate-y-8 transition-all duration-500 group">
                         <div class="card-glass p-6 md:p-8 rounded-2xl hover:border-[#D4AF37]/30 hover:shadow-[0_0_30px_rgba(212,175,55,0.1)] flex flex-col ${flexAlign}">
-                            
                             <div class="flex items-center gap-4 mb-4 w-full ${isLeft ? 'md:flex-row-reverse' : 'md:flex-row'} justify-between md:justify-start">
                                 <div class="w-10 h-10 rounded-full border border-[#D4AF37]/20 flex items-center justify-center font-serif-display text-[#D4AF37] text-sm group-hover:bg-[#D4AF37] group-hover:text-black transition-colors duration-500">
                                     ${surah.no}
@@ -479,10 +736,8 @@
                                 <span class="text-[10px] uppercase tracking-widest text-gray-500">${mode === 'revelation' ? 'Rev #' + (index+1) : 'Mushaf #' + surah.no}</span>
                                 <div class="font-arabic text-2xl text-gray-600 group-hover:text-[#D4AF37] transition-colors duration-500 ml-auto md:ml-0">۝</div>
                             </div>
-
                             <h3 class="text-2xl font-serif-display text-white mb-1 group-hover:translate-x-1 transition-transform duration-300 ${alignClass}">${surah.name}</h3>
                             <p class="text-[#D4AF37] text-xs uppercase tracking-widest mb-4 opacity-80 ${alignClass}">${surah.meaning}</p>
-                            
                             <p class="text-gray-400 font-light leading-relaxed text-sm border-t border-white/5 pt-4 group-hover:text-gray-200 transition-colors duration-300 ${alignClass}">
                                 ${surah.summary}
                             </p>
@@ -492,17 +747,13 @@
                 container.appendChild(wrapper);
             });
 
-            // Re-init Animations
             requestAnimationFrame(() => initAnimations());
         }
 
         function initAnimations() {
             gsap.registerPlugin(ScrollTrigger);
-            
-            // Refresh logic for Lenis + ScrollTrigger
             ScrollTrigger.refresh();
 
-            // Hero Parallax
             gsap.to("#hero-content", {
                 scrollTrigger: {
                     trigger: "header",
@@ -514,8 +765,7 @@
                 opacity: 0
             });
 
-            // Timeline Items Animation
-            const items = document.querySelectorAll('.surah-card');
+            const items = document.querySelectorAll('.surah-card > div');
             items.forEach((item, i) => {
                 const isLeft = i % 2 === 0;
                 const xOffset = window.innerWidth > 768 ? (isLeft ? -50 : 50) : 0;
@@ -529,7 +779,7 @@
                         duration: 1,
                         ease: "power3.out",
                         scrollTrigger: {
-                            trigger: item,
+                            trigger: item.parentElement,
                             start: "top 85%",
                             end: "top 50%",
                             toggleActions: "play none none reverse"
@@ -538,7 +788,6 @@
                 );
             });
             
-            // Highlight Timeline Nodes
             const nodes = document.querySelectorAll('.timeline-node');
             nodes.forEach(node => {
                 gsap.fromTo(node,
@@ -557,45 +806,6 @@
             });
         }
 
-        // --- AUTO SCROLL ---
-        function toggleAutoScroll() {
-            isAutoScrolling = !isAutoScrolling;
-            const btn = document.getElementById('autoScrollBtn');
-            const play = document.getElementById('playIcon');
-            const pause = document.getElementById('pauseIcon');
-
-            if (isAutoScrolling) {
-                btn.classList.add('bg-[#D4AF37]', 'text-black');
-                btn.classList.remove('text-[#D4AF37]');
-                play.classList.add('hidden');
-                pause.classList.remove('hidden');
-                autoScrollLoop();
-            } else {
-                btn.classList.remove('bg-[#D4AF37]', 'text-black');
-                btn.classList.add('text-[#D4AF37]');
-                play.classList.remove('hidden');
-                pause.classList.add('hidden');
-                cancelAnimationFrame(autoScrollRafId);
-            }
-        }
-
-        function autoScrollLoop() {
-            if (!isAutoScrolling) return;
-            // Scroll down by 2 pixels per frame for smooth slow drift
-            // Using window.scrollBy with Lenis intercepting works well
-            window.scrollBy(0, 2);
-            autoScrollRafId = requestAnimationFrame(autoScrollLoop);
-        }
-
-        // Stop autoscroll on manual interaction
-        document.addEventListener('wheel', () => {
-            if(isAutoScrolling) toggleAutoScroll();
-        });
-        document.addEventListener('touchstart', () => {
-            if(isAutoScrolling) toggleAutoScroll();
-        });
-
-        // --- GENERATE OG IMAGE ---
         function generateOGImage() {
             const canvas = document.getElementById('ogCanvas');
             const ctx = canvas.getContext('2d');
